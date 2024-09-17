@@ -1,0 +1,203 @@
+use test
+
+// знайти все
+db.users.find()
+
+
+// додати об'єкт
+db.users.insertOne({car: 'BMW', year: 2000})
+
+//знайти по id
+db.users.find({_id:ObjectId('66e940c169dc667451d9b033')})
+
+//пошук по полям
+db.users.find({age:16})
+db.users.find({gender:'female', rating:2})
+
+//пошук по полям та тільки бажані поля
+db.users.find(
+    {gender:'female', rating:2},
+    {id:1, name:1, parents:1}
+
+)
+// 0 (false) -- показати все без цього поля
+// 1 (true) -- показати тільки це поле
+
+//пошук по полям та без бажаного поля
+db.users.find(
+    {gender:'female', rating:2},
+    {id:0, name:0, parents:0}
+)
+
+// Складніші речі
+// оператор and
+// всі оператори починаються зі знаку - $
+db.users.find({
+    $and:[
+        {rating:2},
+        {gender:'female'}
+    ]
+})
+
+// оператор або
+db.users.find({
+    $or:[
+        {rating:2},
+        {gender:'female'}
+    ]
+})
+
+// пошук в послідовності
+db.users.find({
+    age:{
+        $in:[12,25,33,48,16,17]
+    }
+})
+
+// пошук хто не входить в цей варіант
+// n - not тобто not in = nin
+db.users.find({
+    age:{
+        $nin:[12,25,33,48,16,17]
+    }
+})
+
+// пошук по оператору
+// більше = gt
+// більше або рівний = gte
+db.users.find({
+    rating:{$gt:2},
+    age:{$gt:15}
+})
+
+db.users.find({
+    age:{$gte:34}
+})
+
+
+// меньшу = lt
+// меньше або рівний = lte
+db.users.find({
+    rating:{$lt:3},
+    age:{$lt:34}
+})
+
+db.users.find({
+    age:{$lte:34}
+})
+
+// не дорівнює (!==) = ne
+db.users.find({
+    age:{$ne:34}
+})
+
+// чи дорівнює = eq
+
+db.users.find({
+    age:{$eq:34}
+})
+// але краще так
+db.users.find({age:34})
+
+
+// робота з стрічками
+// не звертать увагу на регістр - /.../i
+// ^ - початок строки
+// $ - кінець строки
+// . - будь-який символ
+// {2} - скільки сивволів
+
+// пошук з першою літерою а
+db.users.find({
+    name:/^a/i
+})
+
+// пошук з останньою літерою а
+db.users.find({
+    name:/a$/i
+})
+
+// пошук слова с третьою буквою t
+db.users.find({
+    name:/.{2}v/i
+})
+
+// пошук слова по першій і останній букві
+db.users.find({name:/^k.*a$/i})
+
+// пошук слова по букві
+db.users.find({name:/v/i})
+
+
+// sort
+
+// сортування по рейтингу від 1 до останнього
+db.users.find().sort({rating:1})
+
+// сортування по рейтингу від останнього до 1
+db.users.find().sort({rating:-1})
+
+// сортування по рейтингу від останнього до 1, та по алфавіту з кінця
+db.users.find().sort({rating:-1, name:-1})
+
+// сортування по рейтингу від останнього до 1, та по алфавіту з кінця
+// ліміт показу та показ наступних (skip)
+db.users.find().sort({rating:-1, name:-1}).limit(2).skip(2)
+
+
+
+// update (оновлення)
+db.users.find()
+
+// оновити рейтинг
+db.users.updateOne(
+    {_id:ObjectId('66e940b569dc667451d9b023')},
+    {$set:{rating:8}}
+)
+
+// видалити рейтинг, значення повинно бути 1 або true
+db.users.updateOne(
+    {_id:ObjectId('66e940b569dc667451d9b023')},
+    {$unset:{rating:1}}
+)
+
+// оновлення одназу багато
+db.users.updateMany(
+    {gender: 'male'},
+    {$set:{gender: 'animal'}}
+)
+
+// пошук у вкладених об'єктах
+db.users.find({"address.city":{$gt:20}})
+db.users.find({"address.city":/^l/i})
+
+// пошук у вкладених масивах
+db.users.find({parents:'Masha'})
+
+
+// пошук по кількості елементів
+// пошук по кількості батьків
+db.users.find({parents:{$size:2}})
+db.users.find({parents:{$exists:0}})
+
+// push (додавання)
+db.users.find({_id:ObjectId('66e940b569dc667451d9b02a')})
+
+db.users.updateOne(
+    {_id:ObjectId('66e940b569dc667451d9b02a')},
+    {$push:{parents:'Rita'}}
+)
+
+// delete (видалення)
+db.users.deleteOne({_id:ObjectId('66e94813f0aae67c53aba8f2')})
+
+
+
+
+
+
+
+
+
+
+
