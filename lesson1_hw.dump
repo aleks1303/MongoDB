@@ -33,6 +33,12 @@ db.users.find(
 )
 
 // 4) Знайти всіх юзерів котрі вивчають тільки один предмет и додати їм java
+
+db.getCollection('users').updateMany(
+    {studying:{$size:1}},
+    {$push:{studying:'java'}}
+)
+
 db.users.find(
     {studying:{$size:1}},
 )
@@ -66,10 +72,11 @@ db.users.find(
 )
 
 // 7) Видалити всіх юзерів в котрих немає поля studying
-db.users.find(
-    {studying:{$exists:0}},
-    {delete:{_id:ObjectId()}}
-)
+// db.users.find(
+//     {studying:{$exists:0}},
+//     {delete:{_id:ObjectId()}}
+// )
+db.getCollection('users').deleteMany({studying:null})
 
 db.users.find(
     {studying:{$exists:0}}
@@ -80,7 +87,10 @@ db.users.find({
 })
 
 // 9) Всім юзерам котрі не вивчають python додати його
-
+db.getCollection('users').updateMany(
+    {studying:{$ne:'python'}},
+    {$push:{studying:'python'}}
+)
 
 
 // 10) Посортувати юзерів по рейтингу та по номеру квартири (що то що то, від більшого меншого)
