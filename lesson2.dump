@@ -1,0 +1,136 @@
+// Lesson2
+db.teacher.find()
+db.students.find()
+
+
+// агрегація (шукаємо, вичавлюемо
+db.teacher.aggregate([
+    {
+        $group:{
+            _id:'$lesson',
+            minPayment:{$min:'$payment'},
+            maxPayment:{$max:'$payment'},
+            avgPayment:{$avg:'$payment'},
+            sumPayment:{$sum:'$payment'},
+            countOfTeacher:{$sum:1}
+        }
+    },
+    // дивимось більше ніж 3000
+    {
+        $match:{
+            sumPayment:{$gt:3000}
+        }
+    },
+    // сортуємо по середнєарифматичне
+    {
+        $sort:{avgPayment:1}
+    },
+    // видаємо те що бажаємо
+    {
+        $project:{
+            myLesson:'$_id',
+            maxPayment:1,
+            minPayment:1,
+            avgPayment:1,
+            sumPayment:1,
+            countOfTeacher:1,
+            _id:0
+        }
+    },
+    // пропускаємо
+    {
+        $skip:2
+    },
+    // виводимо
+    {
+        $limit:1
+    }
+
+])
+
+
+// поєднаня таблиць
+
+db.teacher.aggregate([
+    // {
+    //     $match:{
+    //         class_curator:{$gt:5}
+    //     }
+    // },
+    {
+        $lookup:{
+            from:'students',
+            localField:'class_curator',
+            foreignField:'class',
+            as: 'myStudents'
+        }
+    },
+  // '  // {
+  //   //     // пошук по імені батьків
+  //   //     // $match:{
+  //   //     //     'myStudents.parents.name':'Dima'
+  //   //     // }
+  //   //
+  //   //
+  //   // },'
+
+    {
+        // розщеплення масиву на складові для детальнішого пошуку
+        $unwind:'$myStudents'
+    },
+    {
+        $unwind:'$myStudents.parents'
+    },
+    {
+        $match:{
+            'myStudents.parents.profession':'doctor'
+        }
+    },
+    {
+        $count:'doctorCount'
+    }
+])
+
+// додати поле з підрахунком кількосі букв в імені студента
+
+db.students.aggregate([
+    {
+        $addFields:{
+            nameLength:{'$strLenCP':'$name'}
+        }
+    },
+    {
+        $match:{
+            nameLength:{$gt:6}
+        }
+    },
+    {
+        $project:{
+            nameLength:0
+        }
+    }
+])
+
+
+// підрахувати батьків чи є чи нема, якщо є скільки (з умовами)
+
+db.students.aggregate([
+    {
+        $addFields:{
+            // умова
+            countOfParents:{$cond:{if:{$isArray:'$parents'},then:{$size:'$parents'}, else:0}}
+        }
+    },
+    {
+        $group:{
+            _id:'',
+            sum:{$sum:'$countOfParents'}
+        }
+    },
+    {
+        $project:{
+            _id:0
+        }
+    }
+])
+
